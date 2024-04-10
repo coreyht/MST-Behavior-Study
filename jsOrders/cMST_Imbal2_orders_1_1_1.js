@@ -1,4 +1,25 @@
 var trial_stim=[
+  /* CT -- 
+    trial: question number, each is shown in order (note the correct_resp.)
+    image: image shown
+    type: ???, only 0-3 (4 types)
+    correct_resp: correct response. 0 = old, 1 = similar, 2 = new (cont_omst line 384)
+    lag: number of items shown between it and its lure???, vals are either -1 or some + integer
+    lbin: "lure bin," appears to mean either most similar to or least similar to on a scale of 1-5
+      (but to what i'm not sure, https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6991464/ )
+      (could mean how similar it and its lure are to one another as a pair)
+      (apparently some files don't have lbins, in which case default = 0??? not sure. cont_omst line 402)
+
+
+    note to self:
+      targets are images that exact repetitions of images seen in the study phase (so seen already?)
+      foils are new images not previously seen
+      lures are similar images to targets but not exactly (so different images)
+
+      correct_resp is only used in tasks 1 and 2, not 3 (will still have correct_resp but will be irrelevant to the study)
+
+    cont_omst only seems to pull from the 2x3 ver of this though
+  */
   {trial: 0, image: 'Set 1_rs/147a.jpg', type: 2, correct_resp: 2, lag: -1, lbin: 5},
   {trial: 1, image: 'Set 1_rs/107a.jpg', type: 2, correct_resp: 2, lag: -1, lbin: 2},
   {trial: 2, image: 'Set 1_rs/092a.jpg', type: 2, correct_resp: 2, lag: -1, lbin: 3},
