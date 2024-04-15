@@ -203,13 +203,16 @@ jatos.onLoad(async function() {
   else if (jatos.studySessionData['resp_mode'] == 'key') {
     resp_mode='key';
   }
-  var stim_set='2'; //CT -- set to 2 by default, same with the simplified Things
-  if (typeof jatos.studySessionData['set'] !== 'undefined') {  // Try here first
-    stim_set = jatos.studySessionData['set']
-  }
-  if (typeof jatos.studySessionData['set_omst'] !== 'undefined') { //Try here 2nd / override
-    stim_set = jatos.studySessionData['set_omst']
-  }
+  var stim_set='1'; //CT -- set to 1 by default, same with the simplified Things
+  // if (typeof jatos.studySessionData['set'] !== 'undefined') {  // Try here first
+  //   stim_set = jatos.studySessionData['set']
+  // }
+  // if (typeof jatos.studySessionData['set_omst'] !== 'undefined') { //Try here 2nd / override
+  //   stim_set = jatos.studySessionData['set_omst']
+  // }
+  if (typeof jatos.studySessionData['set_mstm'] !== 'undefined') {
+    stim_set = jatos.studySessionData['set_mstm']
+  } 
   if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_set'] !== 'undefined') {
     stim_set=jatos.componentJsonInput['force_set'];
     console.log('Stim set forced via JSON component to ' + stim_set);
@@ -235,7 +238,8 @@ jatos.onLoad(async function() {
   //   twochoice=jatos.componentJsonInput['force_twochoice'];
   //   console.log('Two-choice mode forced via JSON component to ' + twochoice);
   // }
-  var selfpaced=1;
+  //var selfpaced=1;
+  var selfpaced=0;
   if (typeof jatos.studySessionData['selfpaced'] !== 'undefined') {
     selfpaced = jatos.studySessionData['selfpaced']
   }
@@ -263,7 +267,7 @@ jatos.onLoad(async function() {
   console.log(trial_stim.length)
   const preload_fnames = new Array(trial_stim.length)
   for (var i=0; i<trial_stim.length; i++) {  // Make our Set X_rs be SetX_rs
-    trial_stim[i].image=baseurl+trial_stim[i].image.replace("Set ","Set");
+    trial_stim[i].image=baseurl+trial_stim[i].image //.replace("Set ","Set");
     preload_fnames[i]=trial_stim[i].image;
   }
   
@@ -294,7 +298,7 @@ jatos.onLoad(async function() {
   /*
   CT -- this is when all the images should be loaded + the language set
   */
-  const phasename='oMSTCont';
+  const phasename='MSTmContElab';
 
   //CT -- this sets up jspsych i assume
   var jsPsych = initJsPsych({on_finish: function() {
@@ -387,9 +391,9 @@ jatos.onLoad(async function() {
   
   //let choicekey='threechoice';
   let choicekey='elaborate';
-  if (twochoice == 1) { choicekey="twochoice" }
+  if (twochoice == 1) { choicekey="twochoice" } //CT -- should never hit this
 
-  //CT -- instructions? oh there's another response mode besides elaborate called instr_choice
+  //CT -- instructions? oh there's another response mode besides elaborate called instr_choice MAY NEED TO REVISIT THIS
   var instr1_trial = {  
     type: (resp_mode == 'button' ? jsPsychHtmlButtonResponse : jsPsychHtmlKeyboardResponse),
     choices: [prompts[resp_mode]['instr_choice']],
@@ -411,22 +415,32 @@ jatos.onLoad(async function() {
     // in corr_resp: 0=old, 1=sim, 2=new
     // CT -- corr_resp is not used for this task?
     trial_info=trial_stim[i]
-    let tr_type='foil';
-    let cresp='n'
+    // let tr_type='foil';
+    // let cresp='n'
+    // if (trial_info.correct_resp == 0) {
+    //   tr_type = 'target';
+    //   cresp='o';
+    // }
+    // else if (trial_info.correct_resp == 1) {
+    //   //CT -- the lure system is going to be different, come back to this. actually i don't think we needa use this
+    //   tr_type='lure';
+    //   if (twochoice == 1) {
+    //     cresp='n';
+    //   }
+    //   else {
+    //     cresp='s';
+    //   }
+    // }
+    let tr_type='n/a';
+    let cresp='n'; //nothing like this, 2
     if (trial_info.correct_resp == 0) {
-      tr_type = 'target';
-      cresp='o';
+      cresp='s'; //exactly same
+    } else if (trial_info.correct_resp == 1) {
+      cresp='ss'; //something similar
+    } else if (trial_info.correct_resp == 3) {
+      cresp='sa'; //same and similar
     }
-    else if (trial_info.correct_resp == 1) {
-      //CT -- the lure system is going to be different, come back to this. actually i don't think we needa use this
-      tr_type='lure';
-      if (twochoice == 1) {
-        cresp='n';
-      }
-      else {
-        cresp='s';
-      }
-    }
+
     //CT -- there are no lure bins for this version of the trial
     let lure_bin=0;  // We may or may not have this in the order file
     if (trial_info.lbin && trial_info.lbin !== 'undefined') {
@@ -477,6 +491,7 @@ jatos.onLoad(async function() {
             else if (data.response == 5) { resp = 'nc'}
         } 
         else {
+            //CT -- UNIMPLEMENTED -- consult for whether or not keypress input is necessary/which keys correspond to what repsonses
             // if (data.response == 'v') { resp = 'o' }
             // else if (data.response == 'b' ) { resp = 's' }
             // else if (data.response == 'n') { resp = 'n' }
@@ -498,12 +513,14 @@ jatos.onLoad(async function() {
         return trial.resp !== null; 
       })
       //CT -- retrieves user input for the real images, the lures, and the foils (unsure what foils are currently) for use below
+      //UNNECESSARY FOR THE ELABORATE TASK. DELETE.
       let targets=validtrials.filter({condition: 'target'});
       let lures=validtrials.filter({condition: 'lure'});
       let foils=validtrials.filter({condition: 'foil'});
 
       //CT -- need to ask about this. very relevant to a two/three choice model, not sure how to do with 5 and x lures
       if (twochoice==1) {
+        //CT -- should never hit this
         let corr_targs = targets.filter({correct: true});
         let corr_lures = lures.filter({correct: true});
         let corr_foils = foils.filter({correct: true});
@@ -559,35 +576,50 @@ jatos.onLoad(async function() {
         // retstr += 'New, ' + targ_new.count() + ", " + lure_new.count() + ', ' + foil_new.count() + '\n';
         // retstr += 'REC, ' + rec.toFixed(3) + ', LDI, ' + ldi.toFixed(3);
 
-        let targ_same = targets.filter({resp: 's'});
-        let targ_ssim = targets.filter({resp: 'ss'});
-        let targ_sors = targets.filter({resp: 'so'});
-        let targ_sans = targets.filter({resp: 'sa'});
-        let targ_noth = targets.filter({resp: 'n'});
-        let targ_nocl = targets.filter({resp: 'nc'});
+        // let targ_same = targets.filter({resp: 's'});
+        // let targ_ssim = targets.filter({resp: 'ss'});
+        // let targ_sors = targets.filter({resp: 'so'});
+        // let targ_sans = targets.filter({resp: 'sa'});
+        // let targ_noth = targets.filter({resp: 'n'});
+        // let targ_nocl = targets.filter({resp: 'nc'});
 
-        let lure_same = lures.filter({resp: 's'});
-        let lure_ssim = lures.filter({resp: 'ss'});
-        let lure_sors = lures.filter({resp: 'so'});
-        let lure_sans = lures.filter({resp: 'sa'});
-        let lure_noth = lures.filter({resp: 'n'});
-        let lure_nocl = lures.filter({resp: 'nc'});
+        // let lure_same = lures.filter({resp: 's'});
+        // let lure_ssim = lures.filter({resp: 'ss'});
+        // let lure_sors = lures.filter({resp: 'so'});
+        // let lure_sans = lures.filter({resp: 'sa'});
+        // let lure_noth = lures.filter({resp: 'n'});
+        // let lure_nocl = lures.filter({resp: 'nc'});
 
-        let foil_same = foils.filter({resp: 's'});
-        let foil_ssim = foils.filter({resp: 'ss'});
-        let foil_sors = foils.filter({resp: 'so'});
-        let foil_sans = foils.filter({resp: 'sa'});
-        let foil_noth = foils.filter({resp: 'n'});
-        let foil_nocl = foils.filter({resp: 'nc'});
+        // let foil_same = foils.filter({resp: 's'});
+        // let foil_ssim = foils.filter({resp: 'ss'});
+        // let foil_sors = foils.filter({resp: 'so'});
+        // let foil_sans = foils.filter({resp: 'sa'});
+        // let foil_noth = foils.filter({resp: 'n'});
+        // let foil_nocl = foils.filter({resp: 'nc'});
 
-        var restr='Valid, ' + targets.count() + ', ' + lures.count() + ', ' + foils.count() + '\n';
-        retstr += 'Exactly same, ' + targ_same.count() + ', ' + lure_same.count() + ', ' + foil_same.count() + '\n';
-        retstr += 'Something similar, ' + targ_ssim.count() + ', ' + lure_ssim.count() + ', ' + foil_ssim.count() + '\n';
-        retstr += 'Same or similar, ' + targ_sors.count() + ', ' + lure_sors.count() + ', ' + foil_sors.count() + '\n';
-        retstr += 'Same and similar, ' + targ_sans.count() + ', ' + lure_sans.count() + ', ' + foil_sans.count() + '\n';
-        retstr += 'Nothing like this, ' + targ_noth.count() + ', ' + lure_noth.count() + ', ' + foil_noth.count() + '\n';
-        retstr += 'No clue' + targ_nc.count(); //CT -- is this one even necessary?
+        let same = validtrials.filter({resp: 's'});
+        let ssim = validtrials.filter({resp: 'ss'});
+        let sors = validtrials.filter({resp: 'so'});
+        let sans = validtrials.filter({resp: 'sa'});
+        let noth = validtrials.filter({resp: 'n'});
+        let nocl = validtrials.filter({resp: 'nc'});
 
+        // var restr='Valid, ' + targets.count() + ', ' + lures.count() + ', ' + foils.count() + '\n';
+        // retstr += 'Exactly same, ' + targ_same.count() + ', ' + lure_same.count() + ', ' + foil_same.count() + '\n';
+        // retstr += 'Something similar, ' + targ_ssim.count() + ', ' + lure_ssim.count() + ', ' + foil_ssim.count() + '\n';
+        // retstr += 'Same or similar, ' + targ_sors.count() + ', ' + lure_sors.count() + ', ' + foil_sors.count() + '\n';
+        // retstr += 'Same and similar, ' + targ_sans.count() + ', ' + lure_sans.count() + ', ' + foil_sans.count() + '\n';
+        // retstr += 'Nothing like this, ' + targ_noth.count() + ', ' + lure_noth.count() + ', ' + foil_noth.count() + '\n';
+        // retstr += 'No clue' + targ_nc.count(); //CT -- is this one even necessary?
+
+        //CT -- logs what the user responded
+        var restr='Valid total, ' + validtrials.count() + '\n';
+        retstr += 'Exactly same, ' + same.count() + '\n';
+        retstr += 'Something similar, ' + ssim.count() + '\n';
+        retstr += 'Same or similar, ' + sors.count() + '\n';
+        retstr += 'Same and similar, ' + sans.count() + '\n';
+        retstr += 'Nothing like this, ' + noth.count() + '\n';
+        retstr += 'No clue' + nocl.count(); //CT -- is this one even necessary?
       }
       /*
         CT -- 
