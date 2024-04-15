@@ -8,6 +8,7 @@
   
   Currently, this is set to do a 256-trial continuous design with 32 lures & repeat pairs at 
     "short" lags of 4-12 and 32 lure and repeat pairs at "medium" lags of 20-100
+    CT -- this info will be changed for Amanda's study
 
   Revised: November 20, 2019 (CELS) for Cordova
    12/2/19 (CELS): using image height/width (new addition to plugin) and if end, returns to param screen
@@ -126,6 +127,7 @@ function waitFor(conditionFunction) {
   return new Promise(poll)
 }
 
+//CT -- just math it seems, related to the study
 function invNormcdf(p) { // https://stackoverflow.com/questions/8816729/javascript-equivalent-for-inverse-normal-function-eg-excels-normsinv-or-nor
   var a1 = -39.6968302866538, a2 = 220.946098424521, a3 = -275.928510446969;
   var a4 = 138.357751867269, a5 = -30.6647980661472, a6 = 2.50662827745924;
@@ -163,12 +165,14 @@ function invNormcdf(p) { // https://stackoverflow.com/questions/8816729/javascri
   return retVal;
 }
 
+//CT -- not actively called here, seems to return a string rep of a number
 function leftFillNum(num, width){
   return num
   .toString()
   .padStart(width,0)
 }
 
+//CT -- just retrieves the user's ID if any
 function getID() {
   // Try to get a reasonable ID code for this person.  You can use the URL with a "sid" parameter or
   // specify one in the jatos studySessionData. If not, it'll use the JATOS workerId.
@@ -186,6 +190,10 @@ function getID() {
   return sid
 }
 
+/* 
+  CT -- ask about the link, it leads to a 403
+  this entire thing seems to load up the study and run it; this is the rest of the code
+*/
 jatos.onLoad(async function() {
   //baseurl='https://starklab.bio.uci.edu/mst/'; // How we'll get images, videos, etc.  Set to empty string to use local folders
   baseurl=''; // How we'll get images, videos, etc.  Set to empty string to use local folders
@@ -221,6 +229,7 @@ jatos.onLoad(async function() {
     subset=jatos.componentJsonInput['force_subset'];
     console.log('subset forced via JSON component to ' + subset);
   }
+  //CT -- this is another thing to ask about, not sure what this refers to rn
   var twochoice=0;
   if (typeof jatos.studySessionData['twochoice'] !== 'undefined') {
     twochoice = jatos.studySessionData['twochoice']
@@ -238,6 +247,9 @@ jatos.onLoad(async function() {
     orderprefix=jatos.componentJsonInput['force_orderprefix'];
     console.log('Order prefix forced via JSON component to ' + orderprefix);
   }
+  // CT -- pulls from jsOrders, manually makes a filename. each file has a trial_stim w/ data:
+  //trial num, the image file (randomized?), type, correct response, lag, and lure bin
+  //(this is what shows trials to the user)
   var orderfile = orderprefix+stim_set+'_'+trialorder+'_'+subset+'.json';
 
   console.log('loading json order: '  + orderfile)
@@ -277,8 +289,14 @@ jatos.onLoad(async function() {
   console.log(json_prompts['task']['name'])
   let prompts=json_prompts['cont'] // Load in this phase's section
 
+
+  // START OF CODE THAT SHOULD BE CONSTANT REGARDLESS OF JATOS / CORDOVA
+  /*
+  CT -- this is when all the images should be loaded + the language set
+  */
   const phasename='oMSTCont';
 
+  //CT -- this sets up jspsych i assume
   var jsPsych = initJsPsych({on_finish: function() {
     if (0) { jsPsych.data.displayData(); }
       else {
@@ -331,6 +349,7 @@ jatos.onLoad(async function() {
   // var trial_txt='Old (<b>v</b>), Similar (<b>b</b>), or New? (<b>n</b>)';
   // var trial_choices=['v','b','n'];
 
+  //CT -- seems to only support two and three choices currently (i assume this is old similar new)
   if (twochoice == 1) {
     var trial_choices=[ prompts[resp_mode]['twochoice']['old'], prompts[resp_mode]['twochoice']['new'] ]; 
   }
@@ -359,6 +378,7 @@ jatos.onLoad(async function() {
   let choicekey='threechoice';
   if (twochoice == 1) { choicekey="twochoice" }
 
+  //CT -- instructions?
   var instr1_trial = {  
     type: (resp_mode == 'button' ? jsPsychHtmlButtonResponse : jsPsychHtmlKeyboardResponse),
     choices: [prompts[resp_mode]['instr_choice']],
@@ -369,13 +389,16 @@ jatos.onLoad(async function() {
   }
   
   // Build up my actual trial timeline
+  // CT -- runs through the trial_stim and creates the questions to be asked.
   var tlv = [];
   var ntrials = trial_stim.length;
+  //CT -- manually set this to 1 to debug while running the trial.
   let DEBUGMODE=0;
   if (DEBUGMODE == 1) { ntrials = 20; }
   console.log('Building up the ' + ntrials + ' trials')
   for (var i=0; i<ntrials; i++) {
     // in corr_resp: 0=old, 1=sim, 2=new
+    //CT -- definitely change this
     trial_info=trial_stim[i]
     let tr_type='foil';
     let cresp='n'
@@ -384,6 +407,7 @@ jatos.onLoad(async function() {
       cresp='o';
     }
     else if (trial_info.correct_resp == 1) {
+      //CT -- the lure system is going to be different, come back to this
       tr_type='lure';
       if (twochoice == 1) {
         cresp='n';
@@ -404,6 +428,7 @@ jatos.onLoad(async function() {
     tlv.push(obj)
   }
   //console.log(JSON.stringify(tlv))
+  //CT -- takes the questions list from above (tlv) and makes a timeline out of them below
   var test_trials = {
     timeline: [
       {
@@ -424,6 +449,7 @@ jatos.onLoad(async function() {
         // let resp = 'n';
         // if (resp_mode == 'button' && data.button_pressed == 0) { resp = 'y' }
         // if (resp_mode == 'keyboard' && data.key_press == 89 ) { resp = 'y' }
+        //CT -- definitely come through and edit this
         let resp = null;
         if (resp_mode == 'button') {
             if (data.response == 0) { resp = 'o' }
@@ -450,10 +476,12 @@ jatos.onLoad(async function() {
       let validtrials=jsPsych.data.get().filterCustom(function(trial) {
         return trial.resp !== null; 
       })
+      //CT -- retrieves user input for the real images, the lures, and the foils (unsure what foils are currently) for use below
       let targets=validtrials.filter({condition: 'target'});
       let lures=validtrials.filter({condition: 'lure'});
       let foils=validtrials.filter({condition: 'foil'});
 
+      //CT -- need to ask about this. very relevant to a two/three choice model, not sure how to do with 5 and x lures
       if (twochoice==1) {
         let corr_targs = targets.filter({correct: true});
         let corr_lures = lures.filter({correct: true});
@@ -488,6 +516,7 @@ jatos.onLoad(async function() {
 
         var retstr = 'HR, ' + hits + ', CR-L, ' + cr_lure + ', CR-F rate, ' + cr_foil + ", d'T:F, " + dpTF.toFixed(3) + ", d'T:L, " + dpTL.toFixed(3) 
       }
+      //CT -- this is for threechoice, uses chars instead of bools and different math. ask about the math.
       else { // OSN
         let targ_old=targets.filter({resp: 'o'});
         let targ_sim=targets.filter({resp: 's'});
@@ -502,6 +531,7 @@ jatos.onLoad(async function() {
         let rec=(targ_old.count() / targets.count()) - (foil_old.count() / foils.count());
         let ldi=(lure_sim.count() / lures.count()) - (foil_sim.count() / foils.count());
 
+        //CT -- new options: exactly same, something similar, same or similar, nothing like this, no clue
         var retstr='Valid, ' + targets.count() + ", " + lures.count() + ', ' + foils.count() + '\n';
         retstr += 'Old, ' + targ_old.count() + ", " + lure_old.count() + ', ' + foil_old.count() + '\n';
         retstr += 'Similar, ' + targ_sim.count() + ", " + lure_sim.count() + ', ' + foil_sim.count() + '\n';
@@ -509,12 +539,24 @@ jatos.onLoad(async function() {
         retstr += 'REC, ' + rec.toFixed(3) + ', LDI, ' + ldi.toFixed(3);
 
       }
+      /*
+        CT -- 
+        two versions of the study: threechoice and elaborate (sixchoice)
+
+        exactly same
+        something similar
+        same or similar
+        same and similar
+        nothing like this
+        no clue
+      */
       
       let date = new Date(); 
       let dcode = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + (date.getDate()+1) + 
         "-" + date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
       
       if (!jatos.batchSession.defined("/" + sid)) {  // Should have this by now, but to be safe -- make sure to create this as an array
+        //CT -- generates strings, likely output data from the trials but need to test to be sure
         jatos.batchSession.add("/" + sid,[phasename+"_"+dcode+"_"+retstr]);
       }
       else { // Append to array
@@ -530,7 +572,7 @@ jatos.onLoad(async function() {
   // END OF CONSTANT CODE
   var preload = {
     type: jsPsychPreload,
-    images: preload_fnames, // since we use a timeline variable, we can't use the simple "trials"
+    images: preload_fnames, // since we use a timeline variable, we can't use the simple "trials" CT -- bc buffering time lol preload
     show_progress_bar: true,
     show_detailed_erros: true,
     continue_after_error: true,

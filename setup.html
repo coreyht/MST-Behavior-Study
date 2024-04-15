@@ -75,22 +75,37 @@ jatos.onLoad(function () {
     var nruns=0;
   }
   var cond = nruns % 2;   // We'll give ourselves just conditions here for 2 stimulus sets
+  var cond2 = Math.floor(Math.random() * 2); //CT -- pseudo-randomly picks which version of the MST to show the user second instead of using nruns
+
+  //CT -- only set2 for the things/extended, but randomize which one gets shown, including option to show all three as well
 
   // But, we'll also let you set JATOS' properties to force a particular condition
   if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_cond'] !== 'undefined') {
     cond=jatos.componentJsonInput['force_cond'];
     console.log('condition forced via JSON component to ' + cond);
   }
+  if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_cond2'] !== 'undefined') {
+    cond=jatos.componentJsonInput['force_cond2'];
+    console.log('condition forced via JSON component to ' + cond2);
+  }
 
-  var order=[5,6]; // Default order skips consent and demographics and does study/test -- will add "end" later
+  //var order=[5,6]; // Default order skips consent and demographics and does study/test -- will add "end" later
+  var order=[6, 7];
   var include_consent=0;
   var include_demographics=0;
+  var include_general=0; //general questionnaire
   var include_idcode=0;
   var include_pcon=0;
+  //CT -- trying this out, not sure if we'll need it
+  // var include_things=0; //include things
+  // var include_extended=0; //include extended
+  var show_all_three=0; //an option to show the user all three versions of the MST, set to false by default
 
   // Useful little tags for the experiment and condition that will go into your log files
   var exptag='oMST'
   var condtag='Unk'
+  //CT -- new
+  var mstm_condtag='Unk'
 
   // Setup things for your various counter-balances.  Here, we only have 2 (which set is used)
   switch (cond) {
@@ -103,6 +118,12 @@ jatos.onLoad(function () {
       condtag='oMST-2';
       break;
   }
+
+  //CT -- new, sets the mstm stimulus set to 2 by default
+  jatos.studySessionData['set_mstm']=2;
+  mstm_condtag='MSTm-2';
+
+  //CT -- NEW, picks which version of the MST to show the user second randomly, since nruns shouldn't be used
 
   // Various manual overrides of that
   let sid=getID();  // Come up with a nice ID number for this person
@@ -120,6 +141,9 @@ jatos.onLoad(function () {
   jatos.studySessionData["taskindex"] = 0;
   jatos.studySessionData['exptag'] = exptag;
   jatos.studySessionData['condtag'] = condtag;
+  //CT -- new
+  jatos.studySessionData['mstm_condtag'] = mstm_condtag;
+  //
 
   console.log(include_consent,include_demographics,include_idcode,include_pcon,order)
   // Now, take any possible things we'd see in the JSON input and convert them to studySessionData so
@@ -133,6 +157,11 @@ jatos.onLoad(function () {
   if (typeof jatos.studyJsonInput['set_omst'] !== 'undefined') {
     jatos.studySessionData['set_omst']=jatos.studyJsonInput['set_omst'];
   }
+  //CT -- NEW
+  if ( typeof jatos.studyJsonInput['set_mstm'] !== 'undefined') { //MSTMore
+    jatos.studySessionData['set_mstm']=jatos.studyJsonInput['set_mstm'];
+  }
+  //
   if (typeof jatos.studyJsonInput['include_demographics'] !== 'undefined') {
     include_demographics=jatos.studyJsonInput['include_demographics'];
     //console.log('study json include demog' + include_demographics);
@@ -140,14 +169,34 @@ jatos.onLoad(function () {
   if (typeof jatos.studyJsonInput['include_consent'] !== 'undefined') {
     include_consent=jatos.studyJsonInput['include_consent'];
   }
+  //CT -- NEW
+  if (typeof jatos.studyJsonInput['include_general'] !== 'undefined') {
+    include_general=jatos.studyJsonInput['include_general'];
+  }
+  //
   if (typeof jatos.studyJsonInput['include_idcode'] !== 'undefined') {
     include_idcode=jatos.studyJsonInput['include_idcode'];
   }
   if (typeof jatos.studyJsonInput['include_pcon'] !== 'undefined') {
     include_pcon=jatos.studyJsonInput['include_pcon'];
   }
+  //CT -- NEW
+
+  // if (typeof jatos.studyJsonInput['include_things'] !== 'undefined') {
+  //   include_things=jatos.studyJsonInput['include_things'];
+  // }
+  // if (typeof jatos.studyJsonInput['include_extended'] !== 'undefined') {
+  //   include_extended=jatos.studyJsonInput['include_extended'];
+  // }
+
+  if (typeof jatos.studyJsonInput['show_all_three'] !== 'undefined') {
+      show_all_three=jatos.studyJsonInput['show_all_three'];
+  }
+
+  //
   if (jatos.studyJsonInput) { console.log('jatos.studyJsonInput: ', jatos.studyJsonInput)}
-  console.log(include_consent,include_demographics,include_idcode,include_pcon,order)
+  //console.log(include_consent,include_demographics,include_idcode,include_pcon,order)
+  console.log(include_consent,include_demographics,include_general,include_idcode,include_pcon,include_things,include_extended,order);
   console.log(jatos.studyJsonInput);
   //console.log(jatos.batchProperties.title);
   // Now, let any batch-level bits override those
@@ -158,6 +207,11 @@ jatos.onLoad(function () {
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['set_omst'] !== 'undefined' ) { 
     jatos.studySessionData['set_omst']=jatos.batchJsonInput['set_omst'];
   }
+  //CT -- new
+  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['set_mstm'] !== 'undefined') {
+    jatos.studySessionData['set_mstm']=jatos.batchJsonInput['set_mstm'];
+  }
+  //
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['selfpaced'] !== 'undefined' ) { 
     jatos.studySessionData['selfpaced']=jatos.batchJsonInput['selfpaced'];
   }
@@ -168,25 +222,65 @@ jatos.onLoad(function () {
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_consent'] !== 'undefined' ) { 
     include_consent=jatos.batchJsonInput['include_consent'];
   }
+  //CT -- NEW
+  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_general'] !== 'undefined') {
+    include_general=jatos.batchJsonInput['include_general'];
+  }
+  //
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_idcode'] !== 'undefined' ) { 
     include_idcode=jatos.batchJsonInput['include_idcode'];
   }
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_pcon'] !== 'undefined' ) { 
     include_pcon=jatos.batchJsonInput['include_pcon'];
   }
-  console.log(include_consent,include_demographics,include_idcode,include_pcon,order)
+  //CT -- NEW
   
+  // if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_things'] !== 'undefined') {
+  //   include_things=jatos.batchJsonInput['include_things'];
+  // }
+  // if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_extended'] !== 'undefined') {
+  //   include_extended=jatos.batchJsonInput['include_extended'];
+  // }
+
+  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['show_all_three'] !== 'undefined') {
+    show_all_three=jatos.batchJsonInput['show_all_three'];
+  }
+
+  //
+  //console.log(include_consent,include_demographics,include_idcode,include_pcon,order)
+  console.log(include_consent,include_demographics,include_general,include_idcode,include_pcon,show_all_three,order)
+
   if (typeof jatos.urlQueryParameters.set_mst !== 'undefined') {
     jatos.studySessionData['set_omst'] = jatos.urlQueryParameters.set_omst;
   }
 
+  if (include_general) {order.unshift(5); }
   if (include_demographics) { order.unshift(4); }
   if (include_consent) {order.unshift(3); }
   if (include_idcode) {order.unshift(2); }
-  if (include_pcon) {order.push(7); }
-  order.push(8); // Add the "end", which is #8 currently
+  if (include_pcon) {order.push(8); }
+  //CT -- NEW
+  var mstm_ver = 'none';
+  if (show_all_three) {
+    mstm_ver = 'both';
+    order.push(9);
+    order.push(10);
+  } else {
+    //CT -- pseudo-randomly picks which secondary version of the MST to show the user at a 50/50 ratio
+    let cond2 = Math.floor(Math.random() * 2);
+    if (cond2) {
+      mstm_ver = 'things';
+      order.push(9);
+    } else {
+      mstm_ver = 'elaborate';
+      order.push(10);
+    }
+  }
+  //
+  order.push(11);
+  //order.push(8); // Add the "end", which is #8 currently
   jatos.studySessionData["order"] = order;
-  console.log('Worker ID/sid=' + sid + '  URLSID='+urlsid+'  omst set='+jatos.studySessionData["set_omst"] );
+  console.log('Worker ID/sid=' + sid + '  URLSID='+urlsid+'  omst set='+jatos.studySessionData["set_omst"]+'  mstm ver='+mstm_ver );
   console.log('order: ' + order);
   //console.log('set: ' + jatos.urlQueryParameters.set_mst);
   console.log('full: ' + jatos.urlQueryParameters)
@@ -195,12 +289,15 @@ jatos.onLoad(function () {
   var d= new Date();
 
   jatos.appendResultData({
-    task: "setup-oMST",
+    task: "setup-oMST", //CT -- might change the name of this to reflect that it sets up the sets for both MSTs
     subject: sid,
     urlsid: urlsid,
     selfpaced: jatos.studySessionData['selfpaced'],
     respmode: jatos.studySessionData['resp_mode'],
     oMSTSet: jatos.studySessionData["set_omst"],
+    //CT -- new
+    MSTmSet: jatos.studySessionData["set_mstm"],
+    //
     date: d.toString()
   });
 

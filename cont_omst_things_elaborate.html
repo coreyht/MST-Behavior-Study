@@ -8,6 +8,7 @@
   
   Currently, this is set to do a 256-trial continuous design with 32 lures & repeat pairs at 
     "short" lags of 4-12 and 32 lure and repeat pairs at "medium" lags of 20-100
+    CT -- this info will be changed for Amanda's study
 
   Revised: November 20, 2019 (CELS) for Cordova
    12/2/19 (CELS): using image height/width (new addition to plugin) and if end, returns to param screen
@@ -126,6 +127,7 @@ function waitFor(conditionFunction) {
   return new Promise(poll)
 }
 
+//CT -- just math it seems, related to the study
 function invNormcdf(p) { // https://stackoverflow.com/questions/8816729/javascript-equivalent-for-inverse-normal-function-eg-excels-normsinv-or-nor
   var a1 = -39.6968302866538, a2 = 220.946098424521, a3 = -275.928510446969;
   var a4 = 138.357751867269, a5 = -30.6647980661472, a6 = 2.50662827745924;
@@ -163,12 +165,14 @@ function invNormcdf(p) { // https://stackoverflow.com/questions/8816729/javascri
   return retVal;
 }
 
+//CT -- not actively called here, seems to return a string rep of a number
 function leftFillNum(num, width){
   return num
   .toString()
   .padStart(width,0)
 }
 
+//CT -- just retrieves the user's ID if any
 function getID() {
   // Try to get a reasonable ID code for this person.  You can use the URL with a "sid" parameter or
   // specify one in the jatos studySessionData. If not, it'll use the JATOS workerId.
@@ -186,6 +190,7 @@ function getID() {
   return sid
 }
 
+
 jatos.onLoad(async function() {
   //baseurl='https://starklab.bio.uci.edu/mst/'; // How we'll get images, videos, etc.  Set to empty string to use local folders
   baseurl=''; // How we'll get images, videos, etc.  Set to empty string to use local folders
@@ -198,7 +203,7 @@ jatos.onLoad(async function() {
   else if (jatos.studySessionData['resp_mode'] == 'key') {
     resp_mode='key';
   }
-  var stim_set='1';
+  var stim_set='2'; //CT -- set to 2 by default, same with the simplified Things
   if (typeof jatos.studySessionData['set'] !== 'undefined') {  // Try here first
     stim_set = jatos.studySessionData['set']
   }
@@ -221,24 +226,31 @@ jatos.onLoad(async function() {
     subset=jatos.componentJsonInput['force_subset'];
     console.log('subset forced via JSON component to ' + subset);
   }
+  //CT -- never uses twochoice for this version of the omst.
   var twochoice=0;
-  if (typeof jatos.studySessionData['twochoice'] !== 'undefined') {
-    twochoice = jatos.studySessionData['twochoice']
-  }
-  if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_twochoice'] !== 'undefined') {
-    twochoice=jatos.componentJsonInput['force_twochoice'];
-    console.log('Two-choice mode forced via JSON component to ' + twochoice);
-  }
+  // if (typeof jatos.studySessionData['twochoice'] !== 'undefined') {
+  //   twochoice = jatos.studySessionData['twochoice']
+  // }
+  // if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_twochoice'] !== 'undefined') {
+  //   twochoice=jatos.componentJsonInput['force_twochoice'];
+  //   console.log('Two-choice mode forced via JSON component to ' + twochoice);
+  // }
   var selfpaced=1;
   if (typeof jatos.studySessionData['selfpaced'] !== 'undefined') {
     selfpaced = jatos.studySessionData['selfpaced']
   }
-  var orderprefix = 'jsOrders/cMST_Imbal2x3_orders_';
+  //var orderprefix = 'jsOrders/cMST_Imbal2x3_orders_';
+  //CT -- new
+  var orderprefix = 'jsOrders/MSTMore_orders_';
   if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_orderprefix'] !== 'undefined') {
     orderprefix=jatos.componentJsonInput['force_orderprefix'];
     console.log('Order prefix forced via JSON component to ' + orderprefix);
   }
-  var orderfile = orderprefix+stim_set+'_'+trialorder+'_'+subset+'.json';
+  // CT -- pulls from jsOrders, manually makes a filename. each file has a trial_stim w/ data:
+  //trial num, the image file (randomized?), type, correct response, lag, and lure bin
+  //(this is what shows trials to the user)
+  //var orderfile = orderprefix+stim_set+'_'+trialorder+'_'+subset+'.json';
+  var orderfile = orderprefix+stim_set+'.json';
 
   console.log('loading json order: '  + orderfile)
   var trial_stim=null;
@@ -277,8 +289,14 @@ jatos.onLoad(async function() {
   console.log(json_prompts['task']['name'])
   let prompts=json_prompts['cont'] // Load in this phase's section
 
+
+  // START OF CODE THAT SHOULD BE CONSTANT REGARDLESS OF JATOS / CORDOVA
+  /*
+  CT -- this is when all the images should be loaded + the language set
+  */
   const phasename='oMSTCont';
 
+  //CT -- this sets up jspsych i assume
   var jsPsych = initJsPsych({on_finish: function() {
     if (0) { jsPsych.data.displayData(); }
       else {
@@ -331,15 +349,25 @@ jatos.onLoad(async function() {
   // var trial_txt='Old (<b>v</b>), Similar (<b>b</b>), or New? (<b>n</b>)';
   // var trial_choices=['v','b','n'];
 
+  //CT -- seems to only support two and three choices currently (i assume this is old similar new)
   if (twochoice == 1) {
+    //Should never hit this
     var trial_choices=[ prompts[resp_mode]['twochoice']['old'], prompts[resp_mode]['twochoice']['new'] ]; 
   }
   else {
+    // console.log(prompts[resp_mode])
+    // console.log(prompts[resp_mode]['threechoice']['trial_choices'])
+    // var trial_choices= [prompts[resp_mode]['threechoice']['trial_choices']['old'], 
+    //   prompts[resp_mode]['threechoice']['trial_choices']['sim'], 
+    //   prompts[resp_mode]['threechoice']['trial_choices']['new'] ];
     console.log(prompts[resp_mode])
-    console.log(prompts[resp_mode]['threechoice']['trial_choices'])
-    var trial_choices= [prompts[resp_mode]['threechoice']['trial_choices']['old'], 
-      prompts[resp_mode]['threechoice']['trial_choices']['sim'], 
-      prompts[resp_mode]['threechoice']['trial_choices']['new'] ];
+    console.log(prompts[resp_mode]['elaborate']['trial_choices']) //CT -- go to prompts.
+    var trial_choices = [prompts[resp_mode]['sixchoice']['trial_choices']['exactly_same'],
+        prompts[resp_mode]['elaborate']['trial_choices']['something_similar'],
+        prompts[resp_mode]['elaborate']['trial_choices']['same_or_similar'],
+        prompts[resp_mode]['elaborate']['trial_choices']['same_and_similar'],
+        prompts[resp_mode]['elaborate']['trial_choices']['nothing_like_this'],
+        prompts[resp_mode]['elaborate']['trial_choices']['no_clue']];
   }
   //   trial_txt='Old (<b>v</b>) or New? (<b>n</b>)';
   //   trial_choices=['v','n'];
@@ -356,9 +384,12 @@ jatos.onLoad(async function() {
   //     trial_choices=['Old','Similar','New'];
   //   }
   // }
-  let choicekey='threechoice';
+  
+  //let choicekey='threechoice';
+  let choicekey='elaborate';
   if (twochoice == 1) { choicekey="twochoice" }
 
+  //CT -- instructions? oh there's another response mode besides elaborate called instr_choice
   var instr1_trial = {  
     type: (resp_mode == 'button' ? jsPsychHtmlButtonResponse : jsPsychHtmlKeyboardResponse),
     choices: [prompts[resp_mode]['instr_choice']],
@@ -369,13 +400,16 @@ jatos.onLoad(async function() {
   }
   
   // Build up my actual trial timeline
+  // CT -- runs through the trial_stim and creates the questions to be asked.
   var tlv = [];
   var ntrials = trial_stim.length;
+  //CT -- manually set this to 1 to debug while running the trial.
   let DEBUGMODE=0;
   if (DEBUGMODE == 1) { ntrials = 20; }
   console.log('Building up the ' + ntrials + ' trials')
   for (var i=0; i<ntrials; i++) {
     // in corr_resp: 0=old, 1=sim, 2=new
+    // CT -- corr_resp is not used for this task?
     trial_info=trial_stim[i]
     let tr_type='foil';
     let cresp='n'
@@ -384,6 +418,7 @@ jatos.onLoad(async function() {
       cresp='o';
     }
     else if (trial_info.correct_resp == 1) {
+      //CT -- the lure system is going to be different, come back to this. actually i don't think we needa use this
       tr_type='lure';
       if (twochoice == 1) {
         cresp='n';
@@ -392,6 +427,7 @@ jatos.onLoad(async function() {
         cresp='s';
       }
     }
+    //CT -- there are no lure bins for this version of the trial
     let lure_bin=0;  // We may or may not have this in the order file
     if (trial_info.lbin && trial_info.lbin !== 'undefined') {
       lure_bin=trial_info.lbin;
@@ -404,6 +440,7 @@ jatos.onLoad(async function() {
     tlv.push(obj)
   }
   //console.log(JSON.stringify(tlv))
+  //CT -- takes the questions list from above (tlv) and makes a timeline out of them below
   var test_trials = {
     timeline: [
       {
@@ -424,16 +461,26 @@ jatos.onLoad(async function() {
         // let resp = 'n';
         // if (resp_mode == 'button' && data.button_pressed == 0) { resp = 'y' }
         // if (resp_mode == 'keyboard' && data.key_press == 89 ) { resp = 'y' }
+        //CT -- definitely come through and edit this
         let resp = null;
         if (resp_mode == 'button') {
-            if (data.response == 0) { resp = 'o' }
-            else if (data.response == 2 ) { resp = 'n' }
-            else if (data.response == 1 ) { resp = (twochoice==1 ? 'n' : 's') }
+            // if (data.response == 0) { resp = 'o' }
+            // else if (data.response == 2 ) { resp = 'n' }
+            // else if (data.response == 1 ) { resp = (twochoice==1 ? 'n' : 's') }
+            // CT -- NEED AMANDA TO VERIFY THIS. gonna use:
+            // s (exactly same), ss (something similar), so (same or similar), sa (same and similar), n (nothing like this), nc (no clue) 
+            if (data.response == 0) { resp = 's'}
+            else if (data.response == 1) { resp = 'ss'}
+            else if (data.response == 2) { resp = 'so'}
+            else if (data.response == 3) { resp = 'sa'}
+            else if (data.response == 4) { resp = 'n'}
+            else if (data.response == 5) { resp = 'nc'}
         } 
         else {
-            if (data.response == 'v') { resp = 'o' }
-            else if (data.response == 'b' ) { resp = 's' }
-            else if (data.response == 'n') { resp = 'n' }
+            // if (data.response == 'v') { resp = 'o' }
+            // else if (data.response == 'b' ) { resp = 's' }
+            // else if (data.response == 'n') { resp = 'n' }
+            if (data.response = '') { resp = ''}
         } 
  
         data.correct =  resp == data.correct_response;
@@ -450,10 +497,12 @@ jatos.onLoad(async function() {
       let validtrials=jsPsych.data.get().filterCustom(function(trial) {
         return trial.resp !== null; 
       })
+      //CT -- retrieves user input for the real images, the lures, and the foils (unsure what foils are currently) for use below
       let targets=validtrials.filter({condition: 'target'});
       let lures=validtrials.filter({condition: 'lure'});
       let foils=validtrials.filter({condition: 'foil'});
 
+      //CT -- need to ask about this. very relevant to a two/three choice model, not sure how to do with 5 and x lures
       if (twochoice==1) {
         let corr_targs = targets.filter({correct: true});
         let corr_lures = lures.filter({correct: true});
@@ -488,33 +537,76 @@ jatos.onLoad(async function() {
 
         var retstr = 'HR, ' + hits + ', CR-L, ' + cr_lure + ', CR-F rate, ' + cr_foil + ", d'T:F, " + dpTF.toFixed(3) + ", d'T:L, " + dpTL.toFixed(3) 
       }
+      //CT -- this is for threechoice, uses chars instead of bools and different math. ask about the math.
       else { // OSN
-        let targ_old=targets.filter({resp: 'o'});
-        let targ_sim=targets.filter({resp: 's'});
-        let targ_new=targets.filter({resp: 'n'});
-        let lure_old=lures.filter({resp: 'o'});
-        let lure_sim=lures.filter({resp: 's'});
-        let lure_new=lures.filter({resp: 'n'});
-        let foil_old=foils.filter({resp: 'o'});
-        let foil_sim=foils.filter({resp: 's'});
-        let foil_new=foils.filter({resp: 'n'});
+        // let targ_old=targets.filter({resp: 'o'});
+        // let targ_sim=targets.filter({resp: 's'});
+        // let targ_new=targets.filter({resp: 'n'});
+        // let lure_old=lures.filter({resp: 'o'});
+        // let lure_sim=lures.filter({resp: 's'});
+        // let lure_new=lures.filter({resp: 'n'});
+        // let foil_old=foils.filter({resp: 'o'});
+        // let foil_sim=foils.filter({resp: 's'});
+        // let foil_new=foils.filter({resp: 'n'});
 
-        let rec=(targ_old.count() / targets.count()) - (foil_old.count() / foils.count());
-        let ldi=(lure_sim.count() / lures.count()) - (foil_sim.count() / foils.count());
+        // let rec=(targ_old.count() / targets.count()) - (foil_old.count() / foils.count());
+        // let ldi=(lure_sim.count() / lures.count()) - (foil_sim.count() / foils.count());
 
-        var retstr='Valid, ' + targets.count() + ", " + lures.count() + ', ' + foils.count() + '\n';
-        retstr += 'Old, ' + targ_old.count() + ", " + lure_old.count() + ', ' + foil_old.count() + '\n';
-        retstr += 'Similar, ' + targ_sim.count() + ", " + lure_sim.count() + ', ' + foil_sim.count() + '\n';
-        retstr += 'New, ' + targ_new.count() + ", " + lure_new.count() + ', ' + foil_new.count() + '\n';
-        retstr += 'REC, ' + rec.toFixed(3) + ', LDI, ' + ldi.toFixed(3);
+        // //CT -- new options: exactly same, something similar, same or similar, nothing like this, no clue
+        // var retstr='Valid, ' + targets.count() + ", " + lures.count() + ', ' + foils.count() + '\n';
+        // retstr += 'Old, ' + targ_old.count() + ", " + lure_old.count() + ', ' + foil_old.count() + '\n';
+        // retstr += 'Similar, ' + targ_sim.count() + ", " + lure_sim.count() + ', ' + foil_sim.count() + '\n';
+        // retstr += 'New, ' + targ_new.count() + ", " + lure_new.count() + ', ' + foil_new.count() + '\n';
+        // retstr += 'REC, ' + rec.toFixed(3) + ', LDI, ' + ldi.toFixed(3);
+
+        let targ_same = targets.filter({resp: 's'});
+        let targ_ssim = targets.filter({resp: 'ss'});
+        let targ_sors = targets.filter({resp: 'so'});
+        let targ_sans = targets.filter({resp: 'sa'});
+        let targ_noth = targets.filter({resp: 'n'});
+        let targ_nocl = targets.filter({resp: 'nc'});
+
+        let lure_same = lures.filter({resp: 's'});
+        let lure_ssim = lures.filter({resp: 'ss'});
+        let lure_sors = lures.filter({resp: 'so'});
+        let lure_sans = lures.filter({resp: 'sa'});
+        let lure_noth = lures.filter({resp: 'n'});
+        let lure_nocl = lures.filter({resp: 'nc'});
+
+        let foil_same = foils.filter({resp: 's'});
+        let foil_ssim = foils.filter({resp: 'ss'});
+        let foil_sors = foils.filter({resp: 'so'});
+        let foil_sans = foils.filter({resp: 'sa'});
+        let foil_noth = foils.filter({resp: 'n'});
+        let foil_nocl = foils.filter({resp: 'nc'});
+
+        var restr='Valid, ' + targets.count() + ', ' + lures.count() + ', ' + foils.count() + '\n';
+        retstr += 'Exactly same, ' + targ_same.count() + ', ' + lure_same.count() + ', ' + foil_same.count() + '\n';
+        retstr += 'Something similar, ' + targ_ssim.count() + ', ' + lure_ssim.count() + ', ' + foil_ssim.count() + '\n';
+        retstr += 'Same or similar, ' + targ_sors.count() + ', ' + lure_sors.count() + ', ' + foil_sors.count() + '\n';
+        retstr += 'Same and similar, ' + targ_sans.count() + ', ' + lure_sans.count() + ', ' + foil_sans.count() + '\n';
+        retstr += 'Nothing like this, ' + targ_noth.count() + ', ' + lure_noth.count() + ', ' + foil_noth.count() + '\n';
+        retstr += 'No clue' + targ_nc.count(); //CT -- is this one even necessary?
 
       }
+      /*
+        CT -- 
+        two versions of the study: threechoice and elaborate (sixchoice)
+
+        exactly same
+        something similar
+        same or similar
+        same and similar
+        nothing like this
+        no clue
+      */
       
       let date = new Date(); 
       let dcode = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + (date.getDate()+1) + 
         "-" + date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
       
       if (!jatos.batchSession.defined("/" + sid)) {  // Should have this by now, but to be safe -- make sure to create this as an array
+        //CT -- generates strings, likely output data from the trials but need to test to be sure
         jatos.batchSession.add("/" + sid,[phasename+"_"+dcode+"_"+retstr]);
       }
       else { // Append to array
@@ -530,7 +622,7 @@ jatos.onLoad(async function() {
   // END OF CONSTANT CODE
   var preload = {
     type: jsPsychPreload,
-    images: preload_fnames, // since we use a timeline variable, we can't use the simple "trials"
+    images: preload_fnames, // since we use a timeline variable, we can't use the simple "trials" CT -- bc buffering time lol preload
     show_progress_bar: true,
     show_detailed_erros: true,
     continue_after_error: true,
