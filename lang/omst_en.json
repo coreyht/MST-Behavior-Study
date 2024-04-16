@@ -154,6 +154,88 @@
         "ty": "Thank You"
     },
 
+    "mstm_cont": {
+        "key": {
+            "instr_choice": " ",
+            "instr_prompt": "Press <i>spacebar</i> to begin this next task",
+            "threechoice": {
+                "instr_stim": "Continuous Exactly Same (<b>v</b>), Something Similar (<b>b</b>), or Nothing Like This (<b>n</b>) task",
+                "trial_prompt": "Did you see this before? Is it Exactly Same (<b>v</b>), Something Similar (<b>b</b>), or Nothing Like This (<b>n</b>)?",
+                "trial_choices": {
+                    "sam": "v",
+                    "sim": "b",
+                    "new": "n"
+                }
+            },
+            "twochoice": {
+                "instr_stim": "Continuous Exactly Same (<b>v</b>), Something Similar (<b>b</b>), or Nothing Like This (<b>n</b>) task",
+                "trial_prompt": "Did you see this before? Is it Exactly Same (<b>v</b>), Something Similar (<b>b</b>), or Nothing Like This (<b>n</b>)?",
+                "trial_choices": {
+                    "sam": "v",
+                    "new": "n"
+                }
+            }
+        },
+        "button": {
+            "instr_choice": "OK",
+            "instr_prompt": "Press <i>OK</i> to begin this next task</p>",
+            "threechoice": {
+                "instr_stim": "Continuous <i>Exactly Same</i>, <i>Something Similar</i>, or <i>Nothing Like This</i> task",
+                "trial_prompt": "Did you see this before? Is it <i>Exactly Same</i>, <i>Something Similar</i>, or <i>Nothing Like This</i>?",
+                "trial_choices": {
+                    "sam": "Exactly Same",
+                    "sim": "Something Similar",
+                    "new": "Nothing Like This"
+                }
+            },
+            "twochoice": {
+                "instr_stim": "Continuous <i>Exactly Same</i>, <i>Something Similar</i>, or <i>Nothing Like This</i> task",
+                "trial_prompt": "Did you see this before? Is it <i>Exactly Same</i>, <i>Something Similar</i>, or <i>Nothing Like This</i>?",
+                "trial_choices": {
+                    "old": "Exactly Same",
+                    "new": "Nothing Like This"
+                }
+            }
+        },
+        "ty": "Thank You"
+    },
+
+    "mstm_elab_cont": {
+        "key": {
+            "instr_choice": " ",
+            "instr_prompt": "Press <i>spacebar</i> to begin this next task",
+            "elaborate": {
+                "instr_stim": "Continuous MST Elaborate task",
+                "trial_prompt": "Did you see this before? Is it Exactly Same (<b>x</b>), Something Similar (<b>c</b>), Same or Similar (<b>v</b>), \nSame and Similar (<b>b<b>), Nothing Like This (<b>n<b>), or No Clue (<b>m<b>)?",
+                "trial_choices": {
+                    "exactly_same": "x",
+                    "something_similar": "c",
+                    "same_or_similar": "v",
+                    "same_and_similar": "b",
+                    "nothing_like_this": "n",
+                    "no_clue": "m"
+                }
+            }
+        },
+        "button": {
+            "instr_choice": "OK",
+            "instr_prompt": "Press <i>OK</i> to begin this next task</p>",
+            "elaborate": {
+                "instr_stim": "Continuous MST Elaborate task",
+                "trial_prompt": "Did you see this before? Is it <i>Exactly Same</i>, <i>Something Similar</i>, <i>Same or Similar</i>, \n<i>Same and Similar</i>, <i>Nothing Like This</i>, or <i>No Clue</i>?",
+                "trial_choices": {
+                    "exactly_same": "Exactly Same",
+                    "something_similar": "Something Similar",
+                    "same_or_similar": "Same or Similar",
+                    "same_and_similar": "Same and Similar",
+                    "nothing_like_this": "Nothing Like This",
+                    "no_clue": "No Clue"
+                }
+            }
+        },
+        "ty": "Thank You"
+    },
+
     "pcon": {
         "instr1_stim": "In this task, you will see two objects appear on the screen, one after the other, with a bit  of \"static\" for a few seconds between them. Your job is to determine if the two images are <i>exactly the same</i> or not.",
         "instr2_stim": "Here are those images again. You should have said <b>Same</b> for that one as they were the same images.",

@@ -196,7 +196,7 @@ jatos.onLoad(async function() {
   baseurl=''; // How we'll get images, videos, etc.  Set to empty string to use local folders
   var sid=getID();
 
-    var resp_mode='button';
+  var resp_mode='button';
   if (jatos.studySessionData['resp_mode'] == 'keyboard') {
     resp_mode='key';
   }
@@ -267,10 +267,14 @@ jatos.onLoad(async function() {
   console.log(trial_stim.length)
   const preload_fnames = new Array(trial_stim.length)
   for (var i=0; i<trial_stim.length; i++) {  // Make our Set X_rs be SetX_rs
-    trial_stim[i].image=baseurl+trial_stim[i].image //.replace("Set ","Set");
+    trial_stim[i].image=baseurl+trial_stim[i].image; //.replace("Set ","Set");
     preload_fnames[i]=trial_stim[i].image;
   }
   
+  /*
+    CT -- WARNING!!! Version only supports English; will crash if language is not set to en until implementation for
+    cn, kr, and ru is implemented. (I'm unfamiliar with the Chinese/Korean/Russian languages, would have to consult translators.)
+  */
   var lang='en';
   if (typeof jatos.studySessionData['lang'] !== 'undefined') {
     lang=jatos.studySessionData['lang'];
@@ -291,7 +295,7 @@ jatos.onLoad(async function() {
   });
   await waitFor(_ => json_prompts !== null);
   console.log(json_prompts['task']['name'])
-  let prompts=json_prompts['cont'] // Load in this phase's section
+  let prompts=json_prompts['mstm_elab_cont'] // Load in this phase's section
 
 
   // START OF CODE THAT SHOULD BE CONSTANT REGARDLESS OF JATOS / CORDOVA
@@ -354,25 +358,25 @@ jatos.onLoad(async function() {
   // var trial_choices=['v','b','n'];
 
   //CT -- seems to only support two and three choices currently (i assume this is old similar new)
-  if (twochoice == 1) {
-    //Should never hit this
-    var trial_choices=[ prompts[resp_mode]['twochoice']['old'], prompts[resp_mode]['twochoice']['new'] ]; 
-  }
-  else {
+  // if (twochoice == 1) {
+  //   var trial_choices=[ prompts[resp_mode]['twochoice']['old'], prompts[resp_mode]['twochoice']['new'] ]; 
+  // }
+  //else {
     // console.log(prompts[resp_mode])
     // console.log(prompts[resp_mode]['threechoice']['trial_choices'])
     // var trial_choices= [prompts[resp_mode]['threechoice']['trial_choices']['old'], 
     //   prompts[resp_mode]['threechoice']['trial_choices']['sim'], 
     //   prompts[resp_mode]['threechoice']['trial_choices']['new'] ];
-    console.log(prompts[resp_mode])
-    console.log(prompts[resp_mode]['elaborate']['trial_choices']) //CT -- go to prompts.
-    var trial_choices = [prompts[resp_mode]['sixchoice']['trial_choices']['exactly_same'],
-        prompts[resp_mode]['elaborate']['trial_choices']['something_similar'],
-        prompts[resp_mode]['elaborate']['trial_choices']['same_or_similar'],
-        prompts[resp_mode]['elaborate']['trial_choices']['same_and_similar'],
-        prompts[resp_mode]['elaborate']['trial_choices']['nothing_like_this'],
-        prompts[resp_mode]['elaborate']['trial_choices']['no_clue']];
-  }
+  //CT -- IMPORTANT! May have to return to the langfile to add line breaks so it fits.
+  console.log(prompts[resp_mode])
+  console.log(prompts[resp_mode]['elaborate']['trial_choices']) //CT -- go to prompts.
+  var trial_choices = [prompts[resp_mode]['sixchoice']['trial_choices']['exactly_same'],
+      prompts[resp_mode]['elaborate']['trial_choices']['something_similar'],
+      prompts[resp_mode]['elaborate']['trial_choices']['same_or_similar'],
+      prompts[resp_mode]['elaborate']['trial_choices']['same_and_similar'],
+      prompts[resp_mode]['elaborate']['trial_choices']['nothing_like_this'],
+      prompts[resp_mode]['elaborate']['trial_choices']['no_clue']];
+  //}
   //   trial_txt='Old (<b>v</b>) or New? (<b>n</b>)';
   //   trial_choices=['v','n'];
   // }
@@ -391,9 +395,8 @@ jatos.onLoad(async function() {
   
   //let choicekey='threechoice';
   let choicekey='elaborate';
-  if (twochoice == 1) { choicekey="twochoice" } //CT -- should never hit this
+  //if (twochoice == 1) { choicekey="twochoice" }
 
-  //CT -- instructions? oh there's another response mode besides elaborate called instr_choice MAY NEED TO REVISIT THIS
   var instr1_trial = {  
     type: (resp_mode == 'button' ? jsPsychHtmlButtonResponse : jsPsychHtmlKeyboardResponse),
     choices: [prompts[resp_mode]['instr_choice']],
@@ -440,6 +443,7 @@ jatos.onLoad(async function() {
     } else if (trial_info.correct_resp == 3) {
       cresp='sa'; //same and similar
     }
+    //CT -- same or similar and no clue are never the correct answer
 
     //CT -- there are no lure bins for this version of the trial
     let lure_bin=0;  // We may or may not have this in the order file
@@ -491,11 +495,12 @@ jatos.onLoad(async function() {
             else if (data.response == 5) { resp = 'nc'}
         } 
         else {
-            //CT -- UNIMPLEMENTED -- consult for whether or not keypress input is necessary/which keys correspond to what repsonses
-            // if (data.response == 'v') { resp = 'o' }
-            // else if (data.response == 'b' ) { resp = 's' }
-            // else if (data.response == 'n') { resp = 'n' }
-            if (data.response = '') { resp = ''}
+            if (data.response == 'x') { resp = 's' }
+            else if (data.response == 'c' ) { resp = 'ss' }
+            else if (data.response == 'v') { resp = 'so' }
+            else if (data.response == 'b') { resp = 'sa'}
+            else if (data.response == 'n') { resp = 'n'}
+            else if (data.response == 'm') { resp = 'nc'}
         } 
  
         data.correct =  resp == data.correct_response;
@@ -513,7 +518,7 @@ jatos.onLoad(async function() {
         return trial.resp !== null; 
       })
       //CT -- retrieves user input for the real images, the lures, and the foils (unsure what foils are currently) for use below
-      //UNNECESSARY FOR THE ELABORATE TASK. DELETE.
+      //UNNECESSARY FOR THE ELABORATE TASK.
       let targets=validtrials.filter({condition: 'target'});
       let lures=validtrials.filter({condition: 'lure'});
       let foils=validtrials.filter({condition: 'foil'});
@@ -576,41 +581,12 @@ jatos.onLoad(async function() {
         // retstr += 'New, ' + targ_new.count() + ", " + lure_new.count() + ', ' + foil_new.count() + '\n';
         // retstr += 'REC, ' + rec.toFixed(3) + ', LDI, ' + ldi.toFixed(3);
 
-        // let targ_same = targets.filter({resp: 's'});
-        // let targ_ssim = targets.filter({resp: 'ss'});
-        // let targ_sors = targets.filter({resp: 'so'});
-        // let targ_sans = targets.filter({resp: 'sa'});
-        // let targ_noth = targets.filter({resp: 'n'});
-        // let targ_nocl = targets.filter({resp: 'nc'});
-
-        // let lure_same = lures.filter({resp: 's'});
-        // let lure_ssim = lures.filter({resp: 'ss'});
-        // let lure_sors = lures.filter({resp: 'so'});
-        // let lure_sans = lures.filter({resp: 'sa'});
-        // let lure_noth = lures.filter({resp: 'n'});
-        // let lure_nocl = lures.filter({resp: 'nc'});
-
-        // let foil_same = foils.filter({resp: 's'});
-        // let foil_ssim = foils.filter({resp: 'ss'});
-        // let foil_sors = foils.filter({resp: 'so'});
-        // let foil_sans = foils.filter({resp: 'sa'});
-        // let foil_noth = foils.filter({resp: 'n'});
-        // let foil_nocl = foils.filter({resp: 'nc'});
-
         let same = validtrials.filter({resp: 's'});
         let ssim = validtrials.filter({resp: 'ss'});
         let sors = validtrials.filter({resp: 'so'});
         let sans = validtrials.filter({resp: 'sa'});
         let noth = validtrials.filter({resp: 'n'});
         let nocl = validtrials.filter({resp: 'nc'});
-
-        // var restr='Valid, ' + targets.count() + ', ' + lures.count() + ', ' + foils.count() + '\n';
-        // retstr += 'Exactly same, ' + targ_same.count() + ', ' + lure_same.count() + ', ' + foil_same.count() + '\n';
-        // retstr += 'Something similar, ' + targ_ssim.count() + ', ' + lure_ssim.count() + ', ' + foil_ssim.count() + '\n';
-        // retstr += 'Same or similar, ' + targ_sors.count() + ', ' + lure_sors.count() + ', ' + foil_sors.count() + '\n';
-        // retstr += 'Same and similar, ' + targ_sans.count() + ', ' + lure_sans.count() + ', ' + foil_sans.count() + '\n';
-        // retstr += 'Nothing like this, ' + targ_noth.count() + ', ' + lure_noth.count() + ', ' + foil_noth.count() + '\n';
-        // retstr += 'No clue' + targ_nc.count(); //CT -- is this one even necessary?
 
         //CT -- logs what the user responded
         var restr='Valid total, ' + validtrials.count() + '\n';

@@ -210,9 +210,12 @@ jatos.onLoad(async function() {
   if (typeof jatos.studySessionData['set'] !== 'undefined') {  // Try here first
     stim_set = jatos.studySessionData['set']
   }
-  if (typeof jatos.studySessionData['set_omst'] !== 'undefined') { //Try here 2nd / override
-    stim_set = jatos.studySessionData['set_omst']
-  }
+  // if (typeof jatos.studySessionData['set_omst'] !== 'undefined') { //Try here 2nd / override
+  //   stim_set = jatos.studySessionData['set_omst']
+  // }
+  if (typeof jatos.studySessionData['set_mstm'] !== 'undefined') {
+    stim_set = jatos.studySessionData['set_mstm']
+  } 
   if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_set'] !== 'undefined') {
     stim_set=jatos.componentJsonInput['force_set'];
     console.log('Stim set forced via JSON component to ' + stim_set);
@@ -242,7 +245,7 @@ jatos.onLoad(async function() {
   if (typeof jatos.studySessionData['selfpaced'] !== 'undefined') {
     selfpaced = jatos.studySessionData['selfpaced']
   }
-  var orderprefix = 'jsOrders/cMST_Imbal2x3_orders_';
+  var orderprefix = 'jsOrders/MSTMore_orders_';
   if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_orderprefix'] !== 'undefined') {
     orderprefix=jatos.componentJsonInput['force_orderprefix'];
     console.log('Order prefix forced via JSON component to ' + orderprefix);
@@ -250,7 +253,7 @@ jatos.onLoad(async function() {
   // CT -- pulls from jsOrders, manually makes a filename. each file has a trial_stim w/ data:
   //trial num, the image file (randomized?), type, correct response, lag, and lure bin
   //(this is what shows trials to the user)
-  var orderfile = orderprefix+stim_set+'_'+trialorder+'_'+subset+'.json';
+  var orderfile = orderprefix+stim_set+'.json';
 
   console.log('loading json order: '  + orderfile)
   var trial_stim=null;
@@ -263,7 +266,7 @@ jatos.onLoad(async function() {
   console.log(trial_stim.length)
   const preload_fnames = new Array(trial_stim.length)
   for (var i=0; i<trial_stim.length; i++) {  // Make our Set X_rs be SetX_rs
-    trial_stim[i].image=baseurl+trial_stim[i].image.replace("Set ","Set");
+    trial_stim[i].image=baseurl+trial_stim[i].image; //.replace("Set ","Set");
     preload_fnames[i]=trial_stim[i].image;
   }
   
@@ -287,7 +290,7 @@ jatos.onLoad(async function() {
   });
   await waitFor(_ => json_prompts !== null);
   console.log(json_prompts['task']['name'])
-  let prompts=json_prompts['cont'] // Load in this phase's section
+  let prompts=json_prompts['mstm_cont'] // Load in this phase's section
 
 
   // START OF CODE THAT SHOULD BE CONSTANT REGARDLESS OF JATOS / CORDOVA
@@ -351,12 +354,12 @@ jatos.onLoad(async function() {
 
   //CT -- seems to only support two and three choices currently (i assume this is old similar new)
   if (twochoice == 1) {
-    var trial_choices=[ prompts[resp_mode]['twochoice']['old'], prompts[resp_mode]['twochoice']['new'] ]; 
+    var trial_choices=[ prompts[resp_mode]['twochoice']['sam'], prompts[resp_mode]['twochoice']['new'] ]; 
   }
   else {
     console.log(prompts[resp_mode])
     console.log(prompts[resp_mode]['threechoice']['trial_choices'])
-    var trial_choices= [prompts[resp_mode]['threechoice']['trial_choices']['old'], 
+    var trial_choices= [prompts[resp_mode]['threechoice']['trial_choices']['sam'], 
       prompts[resp_mode]['threechoice']['trial_choices']['sim'], 
       prompts[resp_mode]['threechoice']['trial_choices']['new'] ];
   }
@@ -397,8 +400,7 @@ jatos.onLoad(async function() {
   if (DEBUGMODE == 1) { ntrials = 20; }
   console.log('Building up the ' + ntrials + ' trials')
   for (var i=0; i<ntrials; i++) {
-    // in corr_resp: 0=old, 1=sim, 2=new
-    //CT -- definitely change this
+    // in corr_resp: 0=old/same, 1=sim, 2=new
     trial_info=trial_stim[i]
     let tr_type='foil';
     let cresp='n'
@@ -407,7 +409,6 @@ jatos.onLoad(async function() {
       cresp='o';
     }
     else if (trial_info.correct_resp == 1) {
-      //CT -- the lure system is going to be different, come back to this
       tr_type='lure';
       if (twochoice == 1) {
         cresp='n';
@@ -481,7 +482,7 @@ jatos.onLoad(async function() {
       let lures=validtrials.filter({condition: 'lure'});
       let foils=validtrials.filter({condition: 'foil'});
 
-      //CT -- need to ask about this. very relevant to a two/three choice model, not sure how to do with 5 and x lures
+      //CT -- present in the original oMST with three choices. Leaving it in this version as well to be safe.
       if (twochoice==1) {
         let corr_targs = targets.filter({correct: true});
         let corr_lures = lures.filter({correct: true});
@@ -533,9 +534,9 @@ jatos.onLoad(async function() {
 
         //CT -- new options: exactly same, something similar, same or similar, nothing like this, no clue
         var retstr='Valid, ' + targets.count() + ", " + lures.count() + ', ' + foils.count() + '\n';
-        retstr += 'Old, ' + targ_old.count() + ", " + lure_old.count() + ', ' + foil_old.count() + '\n';
-        retstr += 'Similar, ' + targ_sim.count() + ", " + lure_sim.count() + ', ' + foil_sim.count() + '\n';
-        retstr += 'New, ' + targ_new.count() + ", " + lure_new.count() + ', ' + foil_new.count() + '\n';
+        retstr += 'Exactly same/old, ' + targ_old.count() + ", " + lure_old.count() + ', ' + foil_old.count() + '\n';
+        retstr += 'Something similar, ' + targ_sim.count() + ", " + lure_sim.count() + ', ' + foil_sim.count() + '\n';
+        retstr += 'Nothing like this/new, ' + targ_new.count() + ", " + lure_new.count() + ', ' + foil_new.count() + '\n';
         retstr += 'REC, ' + rec.toFixed(3) + ', LDI, ' + ldi.toFixed(3);
 
       }
