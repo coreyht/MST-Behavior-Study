@@ -274,17 +274,19 @@ jatos.onLoad(async function() {
   /*
     CT -- WARNING!!! Version only supports English; will crash if language is not set to en until implementation for
     cn, kr, and ru is implemented. (I'm unfamiliar with the Chinese/Korean/Russian languages, would have to consult translators.)
+    To prevent the program from failing in advance, I will be commenting out the code that allows for multilang support. It can
+    be uncommented once support is integrated.
   */
   var lang='en';
-  if (typeof jatos.studySessionData['lang'] !== 'undefined') {
-    lang=jatos.studySessionData['lang'];
-  }
-  if (jatos.studyJsonInput && typeof jatos.studyJsonInput['lang'] !== 'undefined' ) { 
-    lang=jatos.studyJsonInput['lang']
-  }
-  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['lang'] !== 'undefined' ) { 
-    lang=jatos.batchJsonInput['lang']
-  }
+  // if (typeof jatos.studySessionData['lang'] !== 'undefined') {
+  //   lang=jatos.studySessionData['lang'];
+  // }
+  // if (jatos.studyJsonInput && typeof jatos.studyJsonInput['lang'] !== 'undefined' ) { 
+  //   lang=jatos.studyJsonInput['lang']
+  // }
+  // if (jatos.batchJsonInput && typeof jatos.batchJsonInput['lang'] !== 'undefined' ) { 
+  //   lang=jatos.batchJsonInput['lang']
+  // }
   // load honeycomb version of lang file
   console.log('loading json lang')
   var langfile='lang/omst_'+lang+'.json';
