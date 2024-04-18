@@ -120,7 +120,26 @@ jatos.onLoad(async function() {
   };
 
   var genQuestions = {
-    
+    type: jsPsychSurveyHtmlForm,
+    //CT -- unsure if we need a preamble to be set or not. will discover upon testing.
+    html: '<div style="text-align: left; font-size: 16px; line-height: 110%"> <p>' +
+    '<p><b>' + prompts['year']['prompt'] + '</b>' + 
+    '<input type="radio" id="freshman" name="year" value="freshman" required> <label for="freshman">'+prompts['year']['fr']+'</label>' +
+    '<input type="radio" id="sophomore" name="year" value="sophomore" required> <label for="sophomore">'+prompts['year']['so']+'</label>' +
+    '<input type="radio" id="junior" name="year" value="junior" required> <label for="junior">'+prompts['year']['ju']+'</label>' +
+    '<input type="radio" id="senior" name="year" value="senior" required> <label for="senior">'+prompts['year']['se']+'</label></p>' +
+    '<p><b>' + prompts['major'] + '</b> <input name="major" type="text" required></p>' +
+    '<p><b>' + prompts['exercise_prompt'] + '</b>' +
+    '<br><b>' + prompts['menstrual'] + '</b> <input name="menstrual" type="text" required' +
+    '<br><b>' + prompts['sleep'] + '</b> <input name="sleep" type="text" required' +
+    '<br><b>' + prompts['diagnosis'] + '</b> <input name="diagnosis" type="text" required' +
+    '<br><b>' + prompts['memory']['prompt'] + '</b><br>' +
+    '<input type="radio" id="one" name="memory" value="one" required> <label for="one">'+prompts['memory']['one']+'</label>' +
+    '<input type="radio" id="two" name="memory" value="two" required> <label for="two">'+prompts['memory']['two']+'</label>' +
+    '<input type="radio" id="three" name="memory" value="three" required> <label for="three">'+prompts['memory']['three']+'</label>' +
+    '<input type="radio" id="four" name="memory" value="four" required> <label for="four">'+prompts['memory']['four']+'</label>' +
+    '<input type="radio" id="five" name="memory" value="five" required> <label for="five">'+prompts['memory']['five']+'</label>' +
+    '</div>'
   };
 
   var timeline = [browserinfo, genQuestions];
