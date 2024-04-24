@@ -85,7 +85,7 @@ jatos.onLoad(function () {
     console.log('condition forced via JSON component to ' + cond);
   }
   if (jatos.componentJsonInput && typeof jatos.componentJsonInput['force_cond2'] !== 'undefined') {
-    cond=jatos.componentJsonInput['force_cond2'];
+    cond2=jatos.componentJsonInput['force_cond2'];
     console.log('condition forced via JSON component to ' + cond2);
   }
 
@@ -96,6 +96,7 @@ jatos.onLoad(function () {
   var include_general=0; //general questionnaire
   var include_idcode=0;
   var include_pcon=0;
+  var include_elaborate_video=0; //CT -- NEW
   //CT -- trying this out, not sure if we'll need it
   // var include_things=0; //include things
   // var include_extended=0; //include extended
@@ -197,7 +198,7 @@ jatos.onLoad(function () {
   //
   if (jatos.studyJsonInput) { console.log('jatos.studyJsonInput: ', jatos.studyJsonInput)}
   //console.log(include_consent,include_demographics,include_idcode,include_pcon,order)
-  console.log(include_consent,include_demographics,include_general,include_idcode,include_pcon,include_things,include_extended,order);
+  console.log(include_consent,include_demographics,include_general,include_idcode,include_pcon,order);
   console.log(jatos.studyJsonInput);
   //console.log(jatos.batchProperties.title);
   // Now, let any batch-level bits override those
@@ -267,8 +268,6 @@ jatos.onLoad(function () {
     order.push(9);
     order.push(10);
   } else {
-    //CT -- pseudo-randomly picks which secondary version of the MST to show the user at a 50/50 ratio
-    let cond2 = Math.floor(Math.random() * 2);
     if (cond2) {
       mstm_ver = 'things';
       order.push(9);

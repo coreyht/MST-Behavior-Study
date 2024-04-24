@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
   <!-- <link rel="stylesheet" href="css/consent_form.css" /> -->
@@ -11,6 +11,7 @@
   
   <script type="text/javascript" src="jatos.js"></script>
   <script type="text/javascript" src="js/index.js"></script>
+  <script src="js/jspsych_731/dist/jspsych.js"></script>
   <script src="js/jspsych_731/dist/plugin-survey-html-form.js"></script>
   <script src="js/jquery-3.1.1.min.js"></script>
   <script src="js/jspsych_731/dist/plugin-browser-check.js"></script>
@@ -23,9 +24,9 @@
       font-size: 125%;
     }
   </style>
-
 </head>
 <body>
+
 </body>
 <script>
 function getID() {
@@ -42,6 +43,14 @@ function getID() {
     else { sid=1234; }
   }
   return sid
+}
+
+function waitFor(conditionFunction) {
+  const poll = resolve => {
+  if(conditionFunction()) resolve();
+    else setTimeout(_ => poll(resolve), 400);
+  }
+  return new Promise(poll)
 }
 
 jatos.onLoad(async function() {
@@ -130,10 +139,10 @@ jatos.onLoad(async function() {
     '<input type="radio" id="senior" name="year" value="senior" required> <label for="senior">'+prompts['year']['se']+'</label></p>' +
     '<p><b>' + prompts['major'] + '</b> <input name="major" type="text" required></p>' +
     '<p><b>' + prompts['exercise_prompt'] + '</b>' +
-    '<br><b>' + prompts['menstrual'] + '</b> <input name="menstrual" type="text" required' +
-    '<br><b>' + prompts['sleep'] + '</b> <input name="sleep" type="text" required' +
-    '<br><b>' + prompts['diagnosis'] + '</b> <input name="diagnosis" type="text" required' +
-    '<br><b>' + prompts['memory']['prompt'] + '</b><br>' +
+    '<p><b>' + prompts['menstrual'] + '</b> <input name="menstrual" type="text" required /></p>' +
+    '<p><b>' + prompts['sleep'] + '</b> <input name="sleep" type="text" required /></p>' +
+    '<p><b>' + prompts['diagnosis'] + '</b> <input name="diagnosis" type="text" required /></p>' +
+    '<p><b>' + prompts['memory']['prompt'] + '</b></p>' +
     '<input type="radio" id="one" name="memory" value="one" required> <label for="one">'+prompts['memory']['one']+'</label>' +
     '<input type="radio" id="two" name="memory" value="two" required> <label for="two">'+prompts['memory']['two']+'</label>' +
     '<input type="radio" id="three" name="memory" value="three" required> <label for="three">'+prompts['memory']['three']+'</label>' +
