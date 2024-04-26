@@ -238,8 +238,7 @@ jatos.onLoad(async function() {
   //   twochoice=jatos.componentJsonInput['force_twochoice'];
   //   console.log('Two-choice mode forced via JSON component to ' + twochoice);
   // }
-  //var selfpaced=1;
-  var selfpaced=0;
+  var selfpaced=1;
   if (typeof jatos.studySessionData['selfpaced'] !== 'undefined') {
     selfpaced = jatos.studySessionData['selfpaced']
   }
@@ -372,7 +371,7 @@ jatos.onLoad(async function() {
   //CT -- IMPORTANT! May have to return to the langfile to add line breaks so it fits.
   console.log(prompts[resp_mode])
   console.log(prompts[resp_mode]['elaborate']['trial_choices']) //CT -- go to prompts.
-  var trial_choices = [prompts[resp_mode]['sixchoice']['trial_choices']['exactly_same'],
+  var trial_choices = [prompts[resp_mode]['elaborate']['trial_choices']['exactly_same'],
       prompts[resp_mode]['elaborate']['trial_choices']['something_similar'],
       prompts[resp_mode]['elaborate']['trial_choices']['same_or_similar'],
       prompts[resp_mode]['elaborate']['trial_choices']['same_and_similar'],
