@@ -1,7 +1,138 @@
-<!doctype HTML>
+<!DOCTYPE html>
 <html>
-<head>
+  <!--
+  Task: oMST with more elaborate options
+  Author: Pia Lalwani
+  Modified from the oMST version 1 jzip available at https://github.com/celstark/oMST/releases/tag/v1.0
 
-</head> 
+  Optional parameters:
+  [sid=##]: Subject ID -- used for data file name (default=1234)
+  [resp=X]: Response mode -- set to 'keyboard' to use keys, anything else to use buttons (default=button)
+  [rand=#]: Should which stimuli are shown as repeats vs. lures be randomized? (default=0)
+  [q_pcon=pagename]: Base of HTML filename to add into the queue after this task (default=null)
+
+ -->
+
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap:  'unsafe-inline' 'unsafe-eval' 
+    https://fonts.gstatic.com http://www.stark-labs.com/exp/jsPsych/mobile_cMST/append_log.php http://www.stark-labs.com/exp/jsPsych/mobile_cMST/write_data_file.php; 
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/css; media-src *; 
+    img-src 'self' data: content:;">
+
+  <script type="text/javascript" src="jatos.js"></script>
+  <script type="text/javascript" src="js/index.js"></script>
+  <script src="js/jspsych_731/dist/jspsych.js"></script>
+  <script src="js/jspsych_731/dist/plugin-html-keyboard-response.js"></script>
+  <script src="js/jspsych_731/dist/plugin-html-button-response.js"></script>
+  <script src="js/jspsych_731/dist/plugin-categorize-image.js"></script>
+  <script src="js/plugin-categorize-image-buttons.js"></script>
+  <script src="js/jspsych_731/dist/plugin-video-button-response.js"></script>
+  <script src="js/jspsych_731/dist/plugin-video-keyboard-response.js"></script>
+  <link rel="stylesheet" href="css/jspsych.css"></link>
+  <style>
+    .jspsych-display-element {
+      font-size: 135%;
+    }
+    .jspsych-btn {
+      margin-bottom:8px;
+      font-size: 150%;
+    }
+  </style>
+</head>
+<script>
+
+
+
+jatos.onLoad(function() {
+  const phasename='cmst_instr_contOSN';
+  var sid=jatos.studySessionData['sid'];
+  if (typeof sid === 'undefined') {
+    sid=1234;
+  }
+  var resp_mode='button';
+  if (jatos.studySessionData['resp_mode'] == 'keyboard') {
+    resp_mode='keyboard';
+  }
+  //resp_mode='button';
+
+  var jsPsych = initJsPsych({on_finish: function() {
+      if (0) { jsPsych.data.displayData(); }
+      else {
+        var order=jatos.studySessionData["order"];
+        jatos.studySessionData["taskindex"] += 1;
+        var expdata = jsPsych.data.get().json();
+        // Submit results to JATOS and queue the end or next task
+        if (typeof order === 'undefined' || order.length == jatos.studySessionData["taskindex"]) { 
+          // we're done
+          // Check if this came from SONA - should have URL.sid and .sona
+          if (typeof jatos.urlQueryParameters.sid === 'undefined' || typeof jatos.urlQueryParameters.sona === 'undefined' ||
+              typeof jatos.studyJsonInput['experiment_id'] === 'undefined' || typeof jatos.studyJsonInput['credit_token'] === 'undefined') {
+            jatos.submitResultData(expdata,jatos.endStudy);
+          }
+          else {
+            var redirect='https://uci.sona-systems.com/webstudy_credit.aspx?experiment_id='+jatos.studyJsonInput['experiment_id']+
+              '&credit_token='+jatos.studyJsonInput['credit_token']+'&survey_code='+jatos.urlQueryParameters.sid;
+            jatos.endStudyAndRedirect(redirect,expdata);
+          }
+        }
+        else {
+          // submit and start the next
+          jatos.submitResultData(expdata, () => { jatos.startComponentByPos(order[jatos.studySessionData["taskindex"]]) });
+        }
+      }
+    }
+  });
+  
+  jsPsych.data.addProperties({
+    task: phasename,
+    subject: sid,
+  });
+
+  // Default is keyboard here - override if buttons
+  var instr_choice=[' ']; // 32 is space
+  var instr_txt='<i>spacebar</i>';
+  var trial_type='';
+  var extra_html='';
+  if (resp_mode == 'button') {
+    instr_choice=['OK'];
+    instr_txt='<i>OK</i>';
+    trial_type='-buttons';
+    extra_html='style="margin-top:112px;"';
+    extra_html='';
+  }
+  var intro = {
+    type: (resp_mode == 'button' ? jsPsychHtmlButtonResponse : jsPsychHtmlKeyboardResponse),
+    choices: instr_choice,
+    prompt: '<p>Press ' + instr_txt + ' to begin</p>',
+    stimulus: 'You are going to see pictures of everyday items, one at a time. For each one, you will select <b><b>Exactly Same</b>: <small>I saw this same exact picture before </small></b> \
+      if you have seen this exact picture before, <b><b>Something Similar</b>: <small>I saw something similar but it was not the exact same picture </small></b> if it is similar, but not exactly the same as the one you saw \
+      before, <b><b>Same or Similar</b>: <small>I saw this exact image AND similar image(s) before</small></b> if you have seen the exact same picture as well as a similar picture before, \
+      <b><b>Same and Similar</b>: <small>I saw an image like this but do not remember if it was the same or similar</small> if you have seen a picture like the one you saw but cannot remember if it was the same or \
+      similar, <b><b>Nothing Like This</b>: <small>I did not see anything like this picture before</small></b> if it is entirely a new object picture, or \
+      <b><b>No Clue</b>: <small>you do not remember if you saw this image or not</small> if you do not remember the picture being something you have seen or not seen.\
+      <p>The way to think of <i>Similar</i> is whether it has the same name, but is a different picture in any way. \
+      <p>A video instruction should make this clear.',
+  }
+
+  var trial = {
+  type: jsPsychVideoKeyboardResponse,
+  stimulus: ['videos/MSTelaborate_instructional_video.mp4'],
+  choices: "NO_KEYS",
+  trial_ends_after_video: true
+  }
+
+  var outtro = {
+    type: (resp_mode == 'button' ? jsPsychHtmlButtonResponse : jsPsychHtmlKeyboardResponse),
+    choices: instr_choice,
+    prompt: '<p>Press ' + instr_txt + ' to begin</p>',
+    stimulus: "That's the idea. Now, we'll do the actual test\
+      <p><i>As you do the actual task, if the picture disappears before you respond, don't worry. Just make your response even if the screen is blank.</i>", 
+  }
+  var  timeline = [intro,trial,outtro];
+  jsPsych.run(timeline);
+    
+  
+});
+</script>
 
 </html>
