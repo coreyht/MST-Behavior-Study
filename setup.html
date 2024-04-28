@@ -90,13 +90,12 @@ jatos.onLoad(function () {
   }
 
   //var order=[5,6]; // Default order skips consent and demographics and does study/test -- will add "end" later
-  var order=[6, 7];
+  var order=[6, 7]; //CT -- Default order includes the oMST video and the oMST only.
   var include_consent=0;
   var include_demographics=0;
   var include_general=0; //general questionnaire
   var include_idcode=0;
   var include_pcon=0;
-  var include_elaborate_video=0; //CT -- NEW
   //CT -- trying this out, not sure if we'll need it
   // var include_things=0; //include things
   // var include_extended=0; //include extended
@@ -256,28 +255,47 @@ jatos.onLoad(function () {
     jatos.studySessionData['set_omst'] = jatos.urlQueryParameters.set_omst;
   }
 
+/*
+  1. setup
+  2. idcode
+  3. consent
+  4. demographics
+  5. gen questionnaire
+  6. omst vid
+  7. omst
+  8. mstmore vid
+  9. mstmore
+  10. elab vid
+  11. elab
+  12. end
+*/
+
   if (include_general) {order.unshift(5); }
   if (include_demographics) { order.unshift(4); }
   if (include_consent) {order.unshift(3); }
   if (include_idcode) {order.unshift(2); }
-  if (include_pcon) {order.push(8); }
+  //if (include_pcon) {order.push(8); }
   //CT -- NEW
   var mstm_ver = 'none';
   if (show_all_three) {
     mstm_ver = 'both';
+    order.push(8);
     order.push(9);
     order.push(10);
+    order.push(11);
   } else {
     if (cond2) {
       mstm_ver = 'things';
+      order.push(8);
       order.push(9);
     } else {
       mstm_ver = 'elaborate';
       order.push(10);
+      order.push(11);
     }
   }
   //
-  order.push(11);
+  order.push(12); //CT -- Add the "end", which is #12 currently
   //order.push(8); // Add the "end", which is #8 currently
   jatos.studySessionData["order"] = order;
   console.log('Worker ID/sid=' + sid + '  URLSID='+urlsid+'  omst set='+jatos.studySessionData["set_omst"]+'  mstm ver='+mstm_ver );
