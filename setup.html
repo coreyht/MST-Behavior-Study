@@ -96,6 +96,8 @@ jatos.onLoad(function () {
   var include_general=0; //general questionnaire
   var include_idcode=0;
   var include_pcon=0;
+  var include_more=0;
+  var include_elaborate=0;
   //CT -- trying this out, not sure if we'll need it
   // var include_things=0; //include things
   // var include_extended=0; //include extended
@@ -189,7 +191,12 @@ jatos.onLoad(function () {
   // if (typeof jatos.studyJsonInput['include_extended'] !== 'undefined') {
   //   include_extended=jatos.studyJsonInput['include_extended'];
   // }
-
+  if (typeof jatos.studyJsonInput['include_more'] !== 'undefined') {
+      show_all_three=jatos.studyJsonInput['include_more'];
+  }
+  if (typeof jatos.studyJsonInput['include_elaborate'] !== 'undefined') {
+      show_all_three=jatos.studyJsonInput['include_elaborate'];
+  }
   if (typeof jatos.studyJsonInput['show_all_three'] !== 'undefined') {
       show_all_three=jatos.studyJsonInput['show_all_three'];
   }
@@ -242,14 +249,19 @@ jatos.onLoad(function () {
   // if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_extended'] !== 'undefined') {
   //   include_extended=jatos.batchJsonInput['include_extended'];
   // }
-
+  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_more'] !== 'undefined') {
+    show_all_three=jatos.batchJsonInput['include_elaborate'];
+  }
+  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['show_all_three'] !== 'undefined') {
+    show_all_three=jatos.batchJsonInput['show_all_three'];
+  }
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['show_all_three'] !== 'undefined') {
     show_all_three=jatos.batchJsonInput['show_all_three'];
   }
 
   //
   //console.log(include_consent,include_demographics,include_idcode,include_pcon,order)
-  console.log(include_consent,include_demographics,include_general,include_idcode,include_pcon,show_all_three,order)
+  console.log(include_consent,include_demographics,include_general,include_idcode,include_pcon,include_more, include_elaborate, show_all_three,order)
 
   if (typeof jatos.urlQueryParameters.set_mst !== 'undefined') {
     jatos.studySessionData['set_omst'] = jatos.urlQueryParameters.set_omst;
@@ -283,7 +295,7 @@ jatos.onLoad(function () {
     order.push(9);
     order.push(10);
     order.push(11);
-  } else {
+  } else if (include_more == 0 && include_elaborate == 0) { //CT -- if both include_more and include_elaborate are marked 0, it will pick one randomly.
     if (cond2) {
       mstm_ver = 'things';
       order.push(8);
@@ -293,6 +305,14 @@ jatos.onLoad(function () {
       order.push(10);
       order.push(11);
     }
+  } else if (include_more == 1) {
+    mstm_ver = 'things';
+    order.push(8);
+    order.push(9);
+  } else if (include_elaborate == 1) {
+    mstm_ver = 'elaborate';
+    order.push(10);
+    order.push(11);
   }
   //
   order.push(12); //CT -- Add the "end", which is #12 currently
