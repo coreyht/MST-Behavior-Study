@@ -590,7 +590,7 @@ jatos.onLoad(async function() {
         let nocl = validtrials.filter({resp: 'nc'});
 
         //CT -- logs what the user responded
-        var restr='Valid total, ' + validtrials.count() + '\n';
+        var retstr='Valid total, ' + validtrials.count() + '\n';
         retstr += 'Exactly same, ' + same.count() + '\n';
         retstr += 'Something similar, ' + ssim.count() + '\n';
         retstr += 'Same or similar, ' + sors.count() + '\n';
