@@ -425,6 +425,8 @@ jatos.onLoad(async function() {
     }
 
     let cat=trial_info.category;
+    let lag=trial_info.lag;
+    let image_type=trial_info.type;
 
     let lure_bin=0;  // We may or may not have this in the order file
     if (trial_info.lbin && trial_info.lbin !== 'undefined') {
@@ -433,7 +435,7 @@ jatos.onLoad(async function() {
     // keycode 'n' (for 1 and 2) = 78, 'y' (for 0)=89
     // keycode 'n' (for 1 and 2) = 78, 'y' (for 0)=89, i=73, o=79
     //let obj={stimulus: trial_info.image, data: {condition: tr_type, correct_response: cresp, lbin:lure_bin}}
-    let obj={stimulus: trial_info.image, data: {condition: tr_type, correct_response: cresp, category: cat, lbin:lure_bin}}
+    let obj={stimulus: trial_info.image, data: {condition: tr_type, correct_response: cresp, category: cat, lag: lag, type: image_type, lbin:lure_bin}}
     //console.log(i + '  bin: ' + lure_bin)
     tlv.push(obj)
   }
