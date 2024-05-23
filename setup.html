@@ -98,9 +98,6 @@ jatos.onLoad(function () {
   var include_pcon=0;
   var include_more=0;
   var include_elaborate=0;
-  //CT -- trying this out, not sure if we'll need it
-  // var include_things=0; //include things
-  // var include_extended=0; //include extended
   var show_all_three=0; //an option to show the user all three versions of the MST, set to false by default
 
   // Useful little tags for the experiment and condition that will go into your log files
@@ -184,13 +181,6 @@ jatos.onLoad(function () {
     include_pcon=jatos.studyJsonInput['include_pcon'];
   }
   //CT -- NEW
-
-  // if (typeof jatos.studyJsonInput['include_things'] !== 'undefined') {
-  //   include_things=jatos.studyJsonInput['include_things'];
-  // }
-  // if (typeof jatos.studyJsonInput['include_extended'] !== 'undefined') {
-  //   include_extended=jatos.studyJsonInput['include_extended'];
-  // }
   if (typeof jatos.studyJsonInput['include_more'] !== 'undefined') {
       show_all_three=jatos.studyJsonInput['include_more'];
   }
@@ -242,18 +232,11 @@ jatos.onLoad(function () {
     include_pcon=jatos.batchJsonInput['include_pcon'];
   }
   //CT -- NEW
-  
-  // if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_things'] !== 'undefined') {
-  //   include_things=jatos.batchJsonInput['include_things'];
-  // }
-  // if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_extended'] !== 'undefined') {
-  //   include_extended=jatos.batchJsonInput['include_extended'];
-  // }
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_more'] !== 'undefined') {
-    show_all_three=jatos.batchJsonInput['include_elaborate'];
+    include_more=jatos.batchJsonInput['include_more'];
   }
-  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['show_all_three'] !== 'undefined') {
-    show_all_three=jatos.batchJsonInput['show_all_three'];
+  if (jatos.batchJsonInput && typeof jatos.batchJsonInput['include_elaborate'] !== 'undefined') {
+    include_elaborate=jatos.batchJsonInput['include_elaborate'];
   }
   if (jatos.batchJsonInput && typeof jatos.batchJsonInput['show_all_three'] !== 'undefined') {
     show_all_three=jatos.batchJsonInput['show_all_three'];
