@@ -371,7 +371,7 @@ jatos.onLoad(async function() {
   // Build up my actual trial timeline
   var tlv = [];
   var ntrials = trial_stim.length;
-  let DEBUGMODE=0;
+  let DEBUGMODE=1;
   if (DEBUGMODE == 1) { ntrials = 20; }
   console.log('Building up the ' + ntrials + ' trials')
   for (var i=0; i<ntrials; i++) {
@@ -445,7 +445,7 @@ jatos.onLoad(async function() {
   var debrief_block = {
     type: jsPsychHtmlKeyboardResponse,
     trial_duration: 500,
-    stimulus: prompt['ty'],
+    stimulus: prompts['ty'],
     on_finish: function (data) {
       let validtrials=jsPsych.data.get().filterCustom(function(trial) {
         return trial.resp !== null; 
